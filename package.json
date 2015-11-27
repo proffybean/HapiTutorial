@@ -1,0 +1,23 @@
+{
+  "name": "hapitutorial",
+  "version": "1.0.0",
+  "description": "Working through the Building Web Applications with hapi Pluralsight series",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/proffybean/HapiTutorial.git"
+  },
+  "author": "Jeff B",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/proffybean/HapiTutorial/issues"
+  },
+  "homepage": "https://github.com/proffybean/HapiTutorial#readme",
+  "dependencies": {
+    "hapi": "^8.8.1",
+    "uuid": "^2.0.1"
+  }
+}
