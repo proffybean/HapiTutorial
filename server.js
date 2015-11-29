@@ -1,14 +1,31 @@
 var Hapi = require('hapi');
 var uuid = require('uuid');
+var fs = require('fs'); // for reading in the cards.json file
+var Joi = require('joi');
+var Boom = require('boom');
 
 var server = new Hapi.Server();
 
-var cards = {};
+var cards = loadCards();
 
 server.connection({port:3000});
 
+server.views({
+	engines:{
+		html: require('handlebars')
+	},
+	path: './templates'
+});
+
 server.ext('onRequest', function(req, reply){
 	console.log('Request received: ' + req.path);
+	reply.continue();
+});
+
+server.ext('onPreResponse', function(request, reply) {
+	if (request.response.isBoom){
+		return reply.view('error', request.response);
+	}
 	reply.continue();
 });
 
@@ -17,8 +34,8 @@ server.route({
 	  path: '/',
 	method: 'GET',
    handler: {
-	         file:'templates/index.html'
-            }
+	   file:'templates/index.html'
+   }
 });
 
 // All the assets for the site
@@ -52,23 +69,39 @@ server.route({
 });
 
 function cardsHandler(request, reply){
-	reply.file('templates/cards.html');
+	//reply.file('templates/cards.html');
+	reply.view('cards', { cards: cards });
 }
+
+// The form data schema for validation:
+var cardSchema = Joi.object().keys({
+	name: Joi.string().min(3).max(50).required(),
+	recipient_email: Joi.string().email().required(),
+	sender_name: Joi.string().min(3).max(50).required(),
+	sender_email: Joi.string().email().required(),
+	card_image: Joi.string().regex(/.+\.(jpg|bmp|png|gif)\b/).required()
+});
 
 function newCardHandler(request, reply){
 	if (request.method == 'get'){
-		reply.file('templates/new.html');	
-	} else {
-		var card = {
-			name: request.payload.name,
-			recipient_email: request.payload.recipient_email,
-			sender_name: request.payload.sender_name,
-			sender_email: request.payload.sender_email,
-			card_image: request.payload.card_image
-		};
-		saveCard(card);
-		console.log(cards);
-		reply.redirect('/cards');
+		reply.view('new', { card_images: mapImages() }); // using the view engine instead of passing the file
+	} else { // POST'ing a new card
+		Joi.validate(request.payload, cardSchema, function(err, val) {
+			// If theres an error, return 
+			if (err){
+				return reply(Boom.badRequest(err.details[0].message));
+			}
+			var card = {
+				name: request.payload.name,
+				recipient_email: val.recipient_email,
+				sender_name: val.sender_name,
+				sender_email: val.sender_email,
+				card_image: val.card_image
+			};
+			saveCard(card);
+			console.log(cards);
+			reply.redirect('/cards');
+		});
 	}
 } 
 
@@ -79,7 +112,17 @@ function saveCard(card){
 }
 
 function deleteCardHandler(request, reply){
-	delete cards[request.params.id];	
+	delete cards[request.params.id];
+	reply(); // gives control back to the client, not sure why;
+}
+
+function loadCards(){
+	var file = fs.readFileSync('./cards.json');
+	return JSON.parse(file.toString());
+}
+
+function mapImages() {
+	return fs.readdirSync('./public/images/cards');
 }
 
 server.start(function(){
