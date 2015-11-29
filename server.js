@@ -17,9 +17,49 @@ server.views({
 	path: './templates'
 });
 
-server.ext('onRequest', function(req, reply){
-	console.log('Request received: ' + req.path);
-	reply.continue();
+// After installing good and good-file, we no longer need to log requests
+//server.ext('onRequest', function(req, reply){
+//	console.log('Request received: ' + req.path);
+//	reply.continue();
+//});
+
+// Setup good logging
+server.register({
+	register: require('good'),
+	options: {
+		opsInterval: 5000,
+		reporters: [
+			{
+				reporter: require('good-file'),
+				events: { ops: '*' },
+				config: {
+					path: './logs',
+					prefix: 'hapi-process',
+					rotate: 'daily'
+				}
+			},
+			{
+				reporter: require('good-file'),
+				events: { response: '*'},
+				config: {
+					path: './logs',
+					prefix: 'hapi-requests',
+					rotate: 'daily'
+				}
+			},
+			{
+				reporter: require('good-file'),
+				events: { error: '*'},
+				config: {
+					path: './logs',
+					prefix: 'hapi-error',
+					rotate: 'daily'
+				}
+			}
+		]
+	}
+}, function(err) {
+	console.log(err);	
 });
 
 server.ext('onPreResponse', function(request, reply) {
