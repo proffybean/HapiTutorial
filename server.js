@@ -56,7 +56,19 @@ server.register({
 		]
 	}
 }, function(err) {
-	console.log('Error: ' + err);	
+	if (err) console.log('Error: ' + err);	
+});
+
+server.register(require('hapi-auth-cookie'), function(err) {
+	if(err) console.log('Auth error ' + err);
+	
+	server.auth.strategy('default', 'cookie', {
+		password: 'myPassword',
+		redirectTo: '/login',
+		isSecure: false // true in a prod environment
+	});
+	
+	server.auth.default('default');
 });
 
 server.ext('onPreResponse', function(request, reply) {
