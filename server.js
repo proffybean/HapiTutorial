@@ -1,9 +1,11 @@
 var Hapi = require('hapi');
 var CardStore = require('./lib/cardStore');
+var UserStore = require('./lib/userStore');
 
 var server = new Hapi.Server();
 
 CardStore.initialize();
+UserStore.initialize();
 
 server.connection({port:3000});
 

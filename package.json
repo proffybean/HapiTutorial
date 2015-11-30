@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/proffybean/HapiTutorial#readme",
   "dependencies": {
+    "bcrypt": "^0.8.5",
     "boom": "^3.0.0",
     "good": "^6.4.0",
     "good-file": "^5.1.1",
