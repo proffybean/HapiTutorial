@@ -10,9 +10,7 @@ UserStore.initialize();
 server.connection({port:3000});
 
 server.views({
-	engines:{
-		html: require('handlebars')
-	},
+	engines:{ html: require('handlebars') },
 	path: './templates'
 });
 
